@@ -19,7 +19,6 @@ type CartItem = {
 };
 
 const CartScreen = () => {
-  // Mock cart data
   const [cartItems, setCartItems] = useState<CartItem[]>([
     {
       id: "1",
@@ -44,26 +43,25 @@ const CartScreen = () => {
     },
   ]);
 
-  // Helper to calculate the total price
-  const calculateTotal = () => {
-    return cartItems
-      .reduce((total, item) => {
-        const price = parseFloat(item.price.replace("$", ""));
-        return total + price * item.quantity;
-      }, 0)
+  const calculateTotal = () =>
+    cartItems
+      .reduce(
+        (total, item) =>
+          total + parseFloat(item.price.slice(1)) * item.quantity,
+        0
+      )
       .toFixed(2);
-  };
 
-  // Handlers for item quantity
-  const increaseQuantity = (id: string) => {
+  const clearCart = () => setCartItems([]);
+
+  const increaseQuantity = (id: string) =>
     setCartItems((prev) =>
       prev.map((item) =>
         item.id === id ? { ...item, quantity: item.quantity + 1 } : item
       )
     );
-  };
 
-  const decreaseQuantity = (id: string) => {
+  const decreaseQuantity = (id: string) =>
     setCartItems((prev) =>
       prev
         .map((item) =>
@@ -73,9 +71,7 @@ const CartScreen = () => {
         )
         .filter((item) => item.quantity > 0)
     );
-  };
 
-  // Render a single cart item
   const renderCartItem = ({ item }: { item: CartItem }) => (
     <View style={styles.cartItem}>
       <Image source={{ uri: item.imageUrl }} style={styles.cartImage} />
@@ -97,7 +93,7 @@ const CartScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
+      {/* Header with delete icon */}
       <View style={styles.header}>
         <Ionicons
           name="arrow-back"
@@ -106,22 +102,34 @@ const CartScreen = () => {
           style={styles.headerIcon}
         />
         <Text style={styles.headerTitle}>Your Cart</Text>
+        <TouchableOpacity onPress={clearCart} style={styles.clearButton}>
+          <Ionicons name="trash-outline" size={24} color="#fff" />
+        </TouchableOpacity>
       </View>
 
-      {/* Cart Items */}
-      <FlatList
-        data={cartItems}
-        keyExtractor={(item) => item.id}
-        renderItem={renderCartItem}
-        contentContainerStyle={styles.cartList}
-      />
+      {/* Background title */}
+      <View style={styles.backgroundTextContainer}>
+        <Text style={styles.backgroundText}>Your Cart</Text>
+      </View>
 
-      {/* Footer with Total */}
+      {/* Main Content */}
+      <View style={styles.mainContent}>
+        <FlatList
+          data={cartItems}
+          keyExtractor={(item) => item.id}
+          renderItem={renderCartItem}
+          contentContainerStyle={styles.cartList}
+        />
+      </View>
+
+      {/* Footer */}
       <View style={styles.footer}>
-        <Text style={styles.totalText}>Total:</Text>
-        <Text style={styles.totalPrice}>${calculateTotal()}</Text>
-        <TouchableOpacity style={styles.checkoutButton}>
-          <Text style={styles.checkoutText}>Checkout</Text>
+        <View style={styles.totalContainer}>
+          <Text style={styles.totalText}>Total:</Text>
+          <Text style={styles.totalPrice}>${calculateTotal()}</Text>
+        </View>
+        <TouchableOpacity style={styles.nextButton}>
+          <Text style={styles.nextButtonText}>Next</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -136,13 +144,13 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: "#4CAF50",
     height: 80,
-    justifyContent: "center",
+    justifyContent: "space-between",
     alignItems: "center",
     flexDirection: "row",
+    paddingHorizontal: 15,
   },
   headerIcon: {
-    position: "absolute",
-    left: 15,
+    marginRight: 10,
   },
   headerTitle: {
     color: "#fff",
@@ -150,8 +158,29 @@ const styles = StyleSheet.create({
     fontFamily: "Roboto",
     fontWeight: "900",
   },
+  clearButton: {
+    padding: 5,
+  },
+  backgroundTextContainer: {
+    position: "absolute",
+    top: 100,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    zIndex: -1,
+  },
+  backgroundText: {
+    fontSize: 50,
+    color: "#333",
+    fontWeight: "bold",
+    textTransform: "uppercase",
+  },
   cartList: {
-    padding: 10,
+    paddingHorizontal: 10,
+    marginTop: 10,
+  },
+  cartListFlex: {
+    flexGrow: 1,
   },
   cartItem: {
     flexDirection: "row",
@@ -189,12 +218,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginHorizontal: 10,
   },
+  mainContent: {
+    flex: 0.88, // Ensures the FlatList only occupies available space
+  },
   footer: {
-    backgroundColor: "#222",
-    padding: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
+    padding: 20,
+    backgroundColor: "#222",
     borderTopWidth: 1,
     borderTopColor: "#444",
+  },
+  totalContainer: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   totalText: {
     color: "#fff",
@@ -205,15 +243,15 @@ const styles = StyleSheet.create({
     color: "#4CAF50",
     fontSize: 20,
     fontWeight: "bold",
-    marginVertical: 10,
+    marginLeft: 10,
   },
-  checkoutButton: {
+  nextButton: {
     backgroundColor: "#4CAF50",
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 20,
   },
-  checkoutText: {
+  nextButtonText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
